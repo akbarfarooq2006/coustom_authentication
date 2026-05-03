@@ -1,6 +1,6 @@
 import express from 'express';
 import morgan from 'morgan';
-import auth from './routes/auth.js';
+import authRouter from './routes/auth.routes.js';
 
 const app = express();
 
@@ -11,8 +11,8 @@ app.use(express.urlencoded({ extended: true }));
 // Logging middleware
 app.use(morgan("dev"));
 
-// routes for authentication
-app.use('/auth', auth)
+// routes for /api/auth
+app.use('/api/auth', authRouter);
 
 
 // Export server
