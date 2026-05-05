@@ -27,20 +27,33 @@ export const register = async (req, res) => {
         password: hashpassword
     });
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
         { 
             userId: user._id,
-            email: user.email,
-            username: user.username
+        },
+        config.JWT_SECRET,
+        { expiresIn: "15m" }
+    );
+
+    const refreshToken = jwt.sign(
+        { 
+            userId: user._id,
         },
         config.JWT_SECRET,
         { expiresIn: "7d" }
     );
 
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     res.status(201).json({
         success: true,
         message: "User registered successfully",
-        token,
+        accessToken,
         User:{
             id: user._id,
             email: user.email,
@@ -58,9 +71,23 @@ export const getMe = async (req, res) => {
         return res.status(401).json({ message: "No token provided" });
     }
 
-    const decoded = jwt.verify(token, config.JWT_SECRET);
-    console.log("Decodded of JWT: ---------------> ",decoded);
-    res.status(200).json({ success: true, message: "User authenticated successfully", decoded });
+    try {
+        const decoded = jwt.verify(token, config.JWT_SECRET);
+        const user = await userModel.findById(decoded.userId);
+        res.status(200).json({
+            success: true, 
+            message: "User authenticated successfully",
+            User:{
+                email: user.email,
+                username: user.username,
+            }
+         });
+
+    } catch (error) {
+        return res.status(401).json({ message: error.message });
+    }
+
+
     
 
 }
