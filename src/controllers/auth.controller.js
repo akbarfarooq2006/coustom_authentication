@@ -118,7 +118,7 @@ export const refreshToken = async (req, res) => {
 
     const newHashedRefreshToken = await crypto.createHash("sha256").update(newRefreshToken).digest("hex");
 
-    session.refreshToken = newHashedRefreshToken;
+    session.refreshToken = newHashedRefreshToken; // 
     await session.save();
 
     res.cookie("refreshToken", newRefreshToken, {
@@ -136,7 +136,7 @@ export const refreshToken = async (req, res) => {
 }
 
 
-// Getme
+// Get-me
 export const getMe = async (req, res) => {
 
     const token = req.headers.authorization?.split(' ')[1];
@@ -159,6 +159,7 @@ export const getMe = async (req, res) => {
         }
 
         const user = await userModel.findById(decoded.userId);
+        
         res.status(200).json({
             success: true,
             message: "User authenticated successfully",
@@ -171,16 +172,11 @@ export const getMe = async (req, res) => {
     } catch (error) {
         return res.status(401).json({ message: error.message });
     }
-
-
-
-
 }
 
 
 // logout user
 export const logout = async (req, res) => {
-
     try {
         const refreshToken = req.cookies.refreshToken;
 
@@ -210,6 +206,7 @@ export const logout = async (req, res) => {
             secure: true,
             sameSite: "strict",
         });
+
         res.status(200).json({ success: true, message: "Logged out successfully" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -217,7 +214,27 @@ export const logout = async (req, res) => {
 }
 
 
-export 
+export  const logoutAll = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+        return res.status(400).json({ message: "No refresh token found" });
+    }
+
+    const decoded = jwt.verify(refreshToken, config.JWT_SECRET);
+    await sessionModel.updateMany(
+        { userId: decoded.userId, revoked: false },
+        { $set: { revoked: true, revokedAt: new Date() } }
+        
+    );
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+    });
+    res.status(200).json({ success: true, message: "Logged out from all sessions successfully" });
+
+}
+
 
 
 

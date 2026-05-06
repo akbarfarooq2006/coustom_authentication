@@ -38,6 +38,11 @@ authRouter.delete('/delete-sessions', deleteAllSessions);
  */
 authRouter.post('/logout', logout)
 
+/**
+ * POST /api/auth/logout-all
+ */
+authRouter.post('/logout-all', logoutAll)
+
 
 
 
