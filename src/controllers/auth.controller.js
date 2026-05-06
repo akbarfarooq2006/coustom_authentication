@@ -62,6 +62,50 @@ export const register = async (req, res) => {
      });
 }
 
+
+//  refresh token
+export const refreshToken = async (req, res) => { 
+    
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(401).json({ message: "No refresh token Found!!" });
+    }
+
+    const decoded = jwt.verify(refreshToken, config.JWT_SECRET);
+    
+    const accessToken = jwt.sign(
+        { 
+            userId: decoded.userId,     
+        },
+        config.JWT_SECRET,
+        { expiresIn: "15m" }
+    );
+
+    const newRefreshToken = jwt.sign(
+        { 
+            userId: decoded.userId,     
+        },
+        config.JWT_SECRET,
+        { expiresIn: "7d" }
+    )
+
+    res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+
+    res.status(200).json({
+        success: true,
+        message: "Access token refreshed successfully",
+        accessToken,
+     });
+}
+
+
 // Getme
 export const getMe = async (req, res) => {
 
