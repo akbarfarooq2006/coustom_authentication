@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, deleteAllUsers, getMe,refreshToken } from "../controllers/auth.controller.js";
+import { register, deleteAllUsers, deleteAllSessions, getMe,refreshToken, logout} from "../controllers/auth.controller.js";
 
 const authRouter = Router();
 
@@ -27,5 +27,20 @@ authRouter.get('/refresh-token',refreshToken);
  * DELETE /api/auth/delete
  */
 authRouter.delete('/delete', deleteAllUsers);
+
+/**
+ * DELETE /api/auth/delete-sessions
+ */
+authRouter.delete('/delete-sessions', deleteAllSessions);
+
+/**
+ * POST /api/auth/logout
+ */
+authRouter.post('/logout', logout)
+
+
+
+
+
 
 export default authRouter;
